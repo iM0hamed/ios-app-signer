@@ -22,7 +22,8 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
     @IBOutlet var appDisplayName: NSTextField!
     @IBOutlet var appShortVersion: NSTextField!
     @IBOutlet var appVersion: NSTextField!
-    
+    @IBOutlet var InputEntText: NSTextField!
+    @IBOutlet var BrowseButton2: NSButton!
     //MARK: Variables
     var provisioningProfiles:[ProvisioningProfile] = []
     var codesigningCerts: [String] = []
@@ -800,7 +801,18 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
                 }
                 
                 //MARK: Generate entitlements.plist
-                if provisioningFile != nil || useAppBundleProfile {
+                if InputEntText.stringValue != nil && fileManager.fileExists(atPath: InputEntText.stringValue) {
+                    do{
+                        try fileManager.copyItem(atPath: self.InputEntText.stringValue, toPath: entitlementsPlist)
+                    }
+                    catch let error as NSError {
+                        setStatus("Error copying entitlements.plist")
+                        Log.write(error.localizedDescription)
+                        cleanup(tempFolder); return
+                    }
+                    
+                }
+                else if provisioningFile != nil || useAppBundleProfile {
                     setStatus("Parsing entitlements")
                     
                     if let profile = ProvisioningProfile(filename: useAppBundleProfile ? appBundleProvisioningFilePath : provisioningFile!){
@@ -1049,11 +1061,20 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
         openDialog.canChooseDirectories = false
         openDialog.allowsMultipleSelection = false
         openDialog.allowsOtherFileTypes = false
-        openDialog.allowedFileTypes = ["ipa","IPA","deb","DEB","app","APP","xcarchive","XCARCHIVE"]
-        openDialog.runModal()
-        if let filename = openDialog.urls.first {
-            InputFileText.stringValue = filename.path
+        if sender.identifier == BrowseButton2.identifier{
+            openDialog.allowedFileTypes = ["xml"]
+            openDialog.runModal()
+            if let filename = openDialog.urls.first {
+                InputEntText.stringValue = filename.path
+            }
+        }else{
+            openDialog.allowedFileTypes = ["ipa","IPA","deb","DEB","app","APP","xcarchive","XCARCHIVE"]
+            openDialog.runModal()
+            if let filename = openDialog.urls.first {
+                InputFileText.stringValue = filename.path
+            }
         }
+
     }
     @IBAction func chooseSigningCertificate(_ sender: NSPopUpButton) {
         Log.write("Set Codesigning Certificate Default to: \(sender.stringValue)")
