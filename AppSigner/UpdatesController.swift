@@ -47,7 +47,7 @@ class UpdatesController: NSWindowController {
                         let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments)
                         if let releases = json as? [[String: AnyObject]],
                             let release = releases[0] as? [String: AnyObject],
-                            let name = release["name"] as? String {
+                            let name = release["tag_name"] as? String {
                                 let prefs = UserDefaults.standard
                                 if let skipVersion = prefs.string(forKey: "skipVersion"){
                                     if skipVersion == name && forceShow == false {
@@ -140,7 +140,7 @@ class UpdatesController: NSWindowController {
         updateWindow.close()
     }
     @IBAction func visitProjectPage(_ sender: NSButton) {
-        NSWorkspace.shared().open(URL(string: "http://dantheman827.github.io/ios-app-signer/")!)
+        NSWorkspace.shared().open(URL(string: "https://github.com/rozbo/ios-app-signer/")!)
         updateWindow.close()
     }
 }
